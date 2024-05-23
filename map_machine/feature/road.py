@@ -493,6 +493,10 @@ class Road(Tagged):
                 extra_width = 2.0
             if self.tags.get("embankment") == "yes":
                 extra_width = 4.0
+            if self.tags.get("sidewalk")  == "both":
+                extra_width = 10.0 * self.scale
+            if self.tags.get("sidewalk") in ["left", "right"]:
+                extra_width = 5.0 * self.scale
 
         fill: str = "none"
         if self.is_area:
@@ -532,7 +536,16 @@ class Road(Tagged):
         filter_: Filter = self.get_filter(svg, is_border)
 
         style: dict[str, Union[int, float, str]] = self.get_style(is_border)
-        path_commands: str = self.line.get_path(self.placement_offset)
+        
+        placement_offset = self.placement_offset
+
+        if is_border:
+            if self.tags.get('sidewalk') == 'right':
+                placement_offset -= 5. * self.scale
+            elif self.tags.get('sidewalk') == 'left':
+                placement_offset += 5. * self.scale
+
+        path_commands: str = self.line.get_path(placement_offset)
         path: Path
         if filter_:
             path = Path(d=path_commands, filter=filter_.get_funciri())
@@ -558,6 +571,8 @@ class Road(Tagged):
             color = self.scheme.get_color("ford_color")
         if self.tags.get("embankment") == "yes":
             color = self.scheme.get_color("embankment_color")
+        if self.tags.get("sidewalk") is not None:
+            color = self.scheme.get_color("sidewalk_color")
         return color
 
     def draw_lanes(self, svg: Drawing, color: Color) -> None:
@@ -604,7 +619,6 @@ class Road(Tagged):
             font_size=10.0,
         )
         text.add(text_path)
-
 
 def get_curve_points(
     road: Road,
