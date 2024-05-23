@@ -466,6 +466,83 @@ class Road(Tagged):
                     )
                 else:
                     logging.error(f"Unknown placement `{place}`.")
+        
+        self._infer_sidewalks()
+
+    # if tags.contains_key("sidewalk:left") || tags.contains_key("sidewalk:right") {
+    #     // Attempt to mangle
+    #     // https://wiki.openstreetmap.org/wiki/Key:sidewalk#Separately_mapped_sidewalks_on_only_one_side
+    #     // into left/right/both. We have to make assumptions for missing values.
+    #     let right = !tags.is("sidewalk:right", "no");
+    #     let left = !tags.is("sidewalk:left", "no");
+    #     let value = match (right, left) {
+    #         (true, true) => "both",
+    #         (true, false) => "right",
+    #         (false, true) => "left",
+    #         (false, false) => "none",
+    #     };
+    #     tags.insert("sidewalk", value);
+    # } else if tags.is_any(osm::HIGHWAY, vec!["motorway", "motorway_link"])
+    #     || tags.is_any("junction", vec!["intersection", "roundabout"])
+    #     || tags.is("foot", "no")
+    #     || tags.is(osm::HIGHWAY, "service")
+    #     || tags.is_any(osm::HIGHWAY, vec!["cycleway", "pedestrian", "track"])
+    # {
+    #     tags.insert("sidewalk", "none");
+    # } else if tags.is("oneway", "yes") {
+    #     if cfg.driving_side == DrivingSide::Right {
+    #         tags.insert("sidewalk", "right");
+    #     } else {
+    #         tags.insert("sidewalk", "left");
+    #     }
+    #     if tags.is_any(osm::HIGHWAY, vec!["residential", "living_street"])
+    #         && !tags.is("dual_carriageway", "yes")
+    #     {
+    #         tags.insert("sidewalk", "both");
+    #     }
+    # } else {
+    #     tags.insert("sidewalk", "both");
+    # }
+
+    def _infer_sidewalks(self):
+        if self.tags.get("sidewalk") in ["left", "right", "both"]:
+            return
+
+        if self.tags.get("highway") in ["footway", "pedestrain", "path", "steps", "track"]:
+            return
+        
+        if "sidewalk:left" in self.tags or "sidewalk:right" in self.tags:
+            right = self.tags.get("sidewalk:right") != "no"
+            left = self.tags.get("sidewalk:left") != "no"
+            value = "none"
+            if right and left:
+                value = "both"
+            elif right:
+                value = "right"
+            elif left:
+                value = "left"
+            self.tags["sidewalk"] = value
+        elif (
+            self.tags.get("highway") in ["motorway", "motorway_link"] or
+            self.tags.get("junction") in ["intersection", "roundabout"] or
+            self.tags.get("foot") == "no" or
+            self.tags.get("highway") == "service" or
+            self.tags.get("highway") in ["cycleway", "pedestrian", "track"]
+        ):
+            self.tags["sidewalk"] = "none"
+        elif self.tags.get("oneway") == "yes":
+            if self.scheme.driving_side == "right":
+                self.tags["sidewalk"] = "right"
+            else:
+                self.tags["sidewalk"] = "left"
+
+            if (
+                self.tags.get("highway") in ["residential", "living_street"]
+                and self.tags.get("dual_carriageway") != "yes"
+            ):
+                self.tags["sidewalk"] = "both"
+        else:
+            self.tags["sidewalk"] = "both"
 
     def get_style(
         self, is_border: bool, is_for_stroke: bool = False

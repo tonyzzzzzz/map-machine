@@ -360,6 +360,8 @@ class Scheme:
         # Storage for created icon sets.
         self.cache: dict[str, tuple[IconSet, int]] = {}
 
+        self.driving_side = options.get("driving_side", "right")
+
     @classmethod
     def from_file(cls, file_name: Path) -> Optional["Scheme"]:
         """
