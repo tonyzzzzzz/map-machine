@@ -417,11 +417,17 @@ class Road(Tagged):
 
         number: int
         if "lanes:forward" in tags:
-            number = int(tags["lanes:forward"])
-            map(lambda x: x.set_forward(True), self.lanes[-number:])
+            try:
+                number = int(tags["lanes:forward"])
+                map(lambda x: x.set_forward(True), self.lanes[-number:])
+            except ValueError:
+                pass
         if "lanes:backward" in tags:
-            number = int(tags["lanes:backward"])
-            map(lambda x: x.set_forward(False), self.lanes[:number])
+            try:
+                number = int(tags["lanes:backward"])
+                map(lambda x: x.set_forward(False), self.lanes[:number])
+            except ValueError:
+                pass
 
         if "width" in tags:
             try:
