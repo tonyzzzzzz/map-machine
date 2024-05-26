@@ -361,6 +361,7 @@ class Scheme:
         self.cache: dict[str, tuple[IconSet, int]] = {}
 
         self.driving_side = options.get("driving_side", "right")
+        self.infer_sidewalk = options.get("infer_sidewalks", True)
 
     @classmethod
     def from_file(cls, file_name: Path) -> Optional["Scheme"]:

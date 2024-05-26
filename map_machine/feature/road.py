@@ -473,7 +473,8 @@ class Road(Tagged):
                 else:
                     logging.error(f"Unknown placement `{place}`.")
         
-        self._infer_sidewalks()
+        if self.scheme.infer_sidewalk:
+            self._infer_sidewalks()
 
     # if tags.contains_key("sidewalk:left") || tags.contains_key("sidewalk:right") {
     #     // Attempt to mangle
