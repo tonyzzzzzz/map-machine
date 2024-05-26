@@ -655,7 +655,7 @@ class Road(Tagged):
             color = self.scheme.get_color("ford_color")
         if self.tags.get("embankment") == "yes":
             color = self.scheme.get_color("embankment_color")
-        if self.tags.get("sidewalk") is not None:
+        if self.tags.get("sidewalk") not in [None, "none"]:
             color = self.scheme.get_color("sidewalk_color")
         return color
 
